@@ -6,7 +6,6 @@
 (function(window) {
     'use strict';
 
-    console.log('InspectSafe: Loading...');
 
     const InspectSafe = {
         enabled: true,
@@ -19,30 +18,22 @@
          * Initialize the library
          */
         init: function() {
-            console.log('InspectSafe: Initializing...');
             if (!this.enabled) {
-                console.log('InspectSafe: Disabled, skipping initialization');
                 return;
             }
 
             // Store the original page code
             this.storeOriginalCode();
-            console.log('InspectSafe: Original code stored');
 
             // Start all detection methods
             this.detectElementInspection();
-            console.log('InspectSafe: Element inspection detection started');
 
             this.detectWindowSize();
-            console.log('InspectSafe: Window size detection started');
 
             this.detectDevToolsOpen();
-            console.log('InspectSafe: DevTools open detection started');
 
             this.detectDOMChanges();
-            console.log('InspectSafe: DOM change detection started');
 
-            console.log('%cInspectSafe Active', 'color: #ff0000; font-size: 20px; font-weight: bold;');
         },
 
         /**
@@ -70,7 +61,6 @@
                 // If outer dimensions change but inner don't, likely DevTools (reduced thresholds for faster detection)
                 if ((widthDiff > 50 || heightDiff > 50) && 
                     (innerWidthDiff < 20 && innerHeightDiff < 20)) {
-                    console.log('InspectSafe: Window size change detected');
                     this.triggerResponse();
                 }
             });
@@ -88,7 +78,6 @@
                 const heightThreshold = window.outerHeight - window.innerHeight > 160;
                 
                 if (widthThreshold || heightThreshold) {
-                    console.log('InspectSafe: DevTools dimensions detected');
                     self.triggerResponse();
                 }
             };
@@ -107,7 +96,6 @@
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        console.log('InspectSafe: DOM style change detected');
                         self.triggerResponse();
                     }
                 });
@@ -132,7 +120,6 @@
                     (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
                     (e.ctrlKey && e.key === 'U')
                 ) {
-                    console.log('InspectSafe: DevTools shortcut detected: ' + e.key);
                     e.preventDefault();
                     this.triggerResponse();
                 }
@@ -146,8 +133,7 @@
                     const computedStyle = window.getComputedStyle(element);
                     if (computedStyle.getPropertyValue('outline') !== 'none' && 
                         computedStyle.getPropertyValue('outline-width') !== '0px') {
-                        console.log('InspectSafe: Element inspection detected');
-                        this.triggerResponse();
+                                    this.triggerResponse();
                     }
                 }
             });
@@ -157,7 +143,6 @@
          * Trigger the response: revert to original code
          */
         triggerResponse: function() {
-            console.log('InspectSafe: TRIGGERING RESPONSE - Reverting to original code');
             // Restore original HTML instead of refreshing
             if (this.originalCode) {
                 document.open();
@@ -175,7 +160,6 @@
          * Disable the library (for testing purposes)
          */
         disable: function() {
-            console.log('InspectSafe: Disabling...');
             this.enabled = false;
             if (this.timer) {
                 clearInterval(this.timer);
@@ -186,16 +170,13 @@
     // Expose to global scope
     window.InspectSafe = InspectSafe;
 
-    console.log('InspectSafe: Library loaded, waiting for DOM...');
 
     // Auto-initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('InspectSafe: DOM loaded, initializing...');
             InspectSafe.init();
         });
     } else {
-        console.log('InspectSafe: DOM already loaded, initializing...');
         InspectSafe.init();
     }
 
