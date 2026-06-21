@@ -149,11 +149,6 @@
                 document.write(this.originalCode);
                 document.close();
             }
-            
-            // Throw error
-            const error = new Error('InspectSafe: DevTools detected! Code reverted.');
-            error.name = 'InspectSafeError';
-            throw error;
         },
 
         /**
