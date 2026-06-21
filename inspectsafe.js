@@ -25,15 +25,8 @@
             // Store the original page code
             this.storeOriginalCode();
 
-            // Start all detection methods
-            this.detectElementInspection();
-
-            this.detectWindowSize();
-
-            this.detectDevToolsOpen();
-
+            // Start DOM change detection only
             this.detectDOMChanges();
-
         },
 
         /**
@@ -41,54 +34,6 @@
          */
         storeOriginalCode: function() {
             this.originalCode = document.documentElement.outerHTML;
-        },
-
-        /**
-         * Detect window size changes (DevTools opening changes window dimensions)
-         */
-        detectWindowSize: function() {
-            const originalWidth = window.outerWidth;
-            const originalHeight = window.outerHeight;
-            const originalInnerWidth = window.innerWidth;
-            const originalInnerHeight = window.innerHeight;
-
-            window.addEventListener('resize', () => {
-                const widthDiff = Math.abs(window.outerWidth - originalWidth);
-                const heightDiff = Math.abs(window.outerHeight - originalHeight);
-                const innerWidthDiff = Math.abs(window.innerWidth - originalInnerWidth);
-                const innerHeightDiff = Math.abs(window.innerHeight - originalInnerHeight);
-
-                // If outer dimensions change but inner don't, likely DevTools (reduced thresholds for faster detection)
-                if ((widthDiff > 50 || heightDiff > 50) && 
-                    (innerWidthDiff < 20 && innerHeightDiff < 20)) {
-                    this.triggerResponse();
-                }
-            });
-        },
-
-        /**
-         * Detect if DevTools is open using various methods
-         */
-        detectDevToolsOpen: function() {
-            const self = this;
-            
-            // Check if DevTools is open by detecting screen dimension changes
-            const checkDevTools = () => {
-                const widthThreshold = window.outerWidth - window.innerWidth > 160;
-                const heightThreshold = window.outerHeight - window.innerHeight > 160;
-                
-                if (widthThreshold || heightThreshold) {
-                    self.triggerResponse();
-                }
-            };
-
-            // Check frequently (every 100ms for faster detection)
-            setInterval(checkDevTools, 100);
-
-            // Also check on focus events
-            window.addEventListener('focus', () => {
-                setTimeout(checkDevTools, 100);
-            });
         },
 
         /**
@@ -118,44 +63,6 @@
                 childList: true,
                 characterData: true,
                 subtree: true
-            });
-        },
-
-        /**
-         * Detect element inspection using various methods
-         */
-        detectElementInspection: function() {
-            // Detect F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
-            document.addEventListener('keydown', (e) => {
-                if (
-                    e.key === 'F12' ||
-                    (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                    (e.ctrlKey && e.key === 'U')
-                ) {
-                    e.preventDefault();
-                    this.triggerResponse();
-                }
-            });
-
-            // Detect element inspection using elementFromPoint (check every mousemove)
-            document.addEventListener('mousemove', (e) => {
-                const element = document.elementFromPoint(e.clientX, e.clientY);
-                if (element) {
-                    // Check if element is being inspected
-                    const computedStyle = window.getComputedStyle(element);
-                    if (computedStyle.getPropertyValue('outline') !== 'none' && 
-                        computedStyle.getPropertyValue('outline-width') !== '0px') {
-                        this.triggerResponse();
-                    }
-                }
-            });
-
-            // Detect when user tries to inspect via browser menu
-            document.addEventListener('click', (e) => {
-                // Check if the click might be from inspect element
-                if (e.shiftKey || e.altKey || e.metaKey) {
-                    this.triggerResponse();
-                }
             });
         },
 
