@@ -1,5 +1,5 @@
 /**
- * InspectSafe - Anti-Debugging Library
+ * InspectSafe - Anti-Debugging Library - MIT LICENSE
  * Detects DevTools/inspect element and responds by throwing an error and refreshing the page
  */
 
@@ -36,9 +36,6 @@
             this.detectWindowSize();
             console.log('InspectSafe: Window size detection started');
 
-            this.detectDebugger();
-            console.log('InspectSafe: Debugger detection started');
-
             console.log('%cInspectSafe Active', 'color: #ff0000; font-size: 20px; font-weight: bold;');
         },
 
@@ -74,33 +71,6 @@
         },
 
         /**
-         * Detect debugger using timing attack (without debugger statement)
-         */
-        detectDebugger: function() {
-            const self = this;
-            const detect = () => {
-                const start = performance.now();
-                // Check if DevTools is open by measuring function execution
-                // This will be slower if DevTools is open
-                const test = () => {
-                    return 1 + 1;
-                };
-                for(let i = 0; i < 1000; i++) {
-                    test();
-                }
-                const end = performance.now();
-
-                if (end - start > this.threshold) {
-                    console.log('InspectSafe: DevTools timing detected');
-                    self.triggerResponse();
-                }
-            };
-
-            // Run detection periodically
-            setInterval(detect, this.checkInterval);
-        },
-
-        /**
          * Detect element inspection using various methods
          */
         detectElementInspection: function() {
@@ -121,6 +91,23 @@
                     console.log('InspectSafe: DevTools shortcut detected: ' + e.key);
                     e.preventDefault();
                     this.triggerResponse();
+                }
+            });
+
+            // Detect element inspection using elementFromPoint
+            let lastElement = null;
+            document.addEventListener('mousemove', (e) => {
+                const element = document.elementFromPoint(e.clientX, e.clientY);
+                if (element && element !== lastElement) {
+                    lastElement = element;
+                    
+                    // Check if element is being inspected
+                    const computedStyle = window.getComputedStyle(element);
+                    if (computedStyle.getPropertyValue('outline') !== 'none' && 
+                        computedStyle.getPropertyValue('outline-width') !== '0px') {
+                        console.log('InspectSafe: Element inspection detected');
+                        this.triggerResponse();
+                    }
                 }
             });
         },
