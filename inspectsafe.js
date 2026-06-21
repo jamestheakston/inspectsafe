@@ -160,15 +160,11 @@
         },
 
         /**
-         * Trigger the response: revert to original code
+         * Trigger the response: reload page
          */
         triggerResponse: function() {
-            // Restore original HTML instead of refreshing
-            if (this.originalCode) {
-                document.open();
-                document.write(this.originalCode);
-                document.close();
-            }
+            // Reload page immediately
+            window.location.reload(true);
         },
 
         /**
