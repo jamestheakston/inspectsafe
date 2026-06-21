@@ -1,5 +1,5 @@
 /**
- * InspectSafe - Anti-Debugging Library - MIT LICENSE
+ * InspectSafe - Anti-Debugging Library
  * Detects DevTools/inspect element and responds by throwing an error and refreshing the page
  */
 
@@ -36,6 +36,12 @@
             this.detectWindowSize();
             console.log('InspectSafe: Window size detection started');
 
+            this.detectDevToolsOpen();
+            console.log('InspectSafe: DevTools open detection started');
+
+            this.detectDOMChanges();
+            console.log('InspectSafe: DOM change detection started');
+
             console.log('%cInspectSafe Active', 'color: #ff0000; font-size: 20px; font-weight: bold;');
         },
 
@@ -61,12 +67,57 @@
                 const innerWidthDiff = Math.abs(window.innerWidth - originalInnerWidth);
                 const innerHeightDiff = Math.abs(window.innerHeight - originalInnerHeight);
 
-                // If outer dimensions change but inner don't, likely DevTools
-                if ((widthDiff > 160 || heightDiff > 160) && 
-                    (innerWidthDiff < 10 && innerHeightDiff < 10)) {
+                // If outer dimensions change but inner don't, likely DevTools (reduced thresholds for faster detection)
+                if ((widthDiff > 50 || heightDiff > 50) && 
+                    (innerWidthDiff < 20 && innerHeightDiff < 20)) {
                     console.log('InspectSafe: Window size change detected');
                     this.triggerResponse();
                 }
+            });
+        },
+
+        /**
+         * Detect if DevTools is open using various methods
+         */
+        detectDevToolsOpen: function() {
+            const self = this;
+            
+            // Check if DevTools is open by detecting screen dimension changes
+            const checkDevTools = () => {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                
+                if (widthThreshold || heightThreshold) {
+                    console.log('InspectSafe: DevTools dimensions detected');
+                    self.triggerResponse();
+                }
+            };
+
+            // Check frequently (every 100ms for faster detection)
+            setInterval(checkDevTools, 100);
+        },
+
+        /**
+         * Detect DOM changes that might indicate inspection
+         */
+        detectDOMChanges: function() {
+            const self = this;
+            
+            // Use MutationObserver to detect DOM changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        console.log('InspectSafe: DOM style change detected');
+                        self.triggerResponse();
+                    }
+                });
+            });
+
+            // Observe the entire document
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['style'],
+                subtree: true
             });
         },
 
@@ -94,13 +145,10 @@
                 }
             });
 
-            // Detect element inspection using elementFromPoint
-            let lastElement = null;
+            // Detect element inspection using elementFromPoint (check every mousemove)
             document.addEventListener('mousemove', (e) => {
                 const element = document.elementFromPoint(e.clientX, e.clientY);
-                if (element && element !== lastElement) {
-                    lastElement = element;
-                    
+                if (element) {
                     // Check if element is being inspected
                     const computedStyle = window.getComputedStyle(element);
                     if (computedStyle.getPropertyValue('outline') !== 'none' && 
@@ -113,19 +161,19 @@
         },
 
         /**
-         * Trigger the response: throw error and refresh page
+         * Trigger the response: revert to original code
          */
         triggerResponse: function() {
-            console.log('InspectSafe: TRIGGERING RESPONSE - Refreshing page');
-            // Refresh page immediately
-            window.location.reload(true);
+            console.log('InspectSafe: TRIGGERING RESPONSE - Reverting to original code');
+            // Restore original HTML instead of refreshing
+            if (this.originalCode) {
+                document.documentElement.outerHTML = this.originalCode;
+            }
             
-            // Throw error (this may not execute due to refresh)
-            const error = new Error('InspectSafe: DevTools detected! Page will refresh.');
+            // Throw error
+            const error = new Error('InspectSafe: DevTools detected! Code reverted.');
             error.name = 'InspectSafeError';
-            setTimeout(() => {
-                throw error;
-            }, 50);
+            throw error;
         },
 
         /**
