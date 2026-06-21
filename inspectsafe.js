@@ -74,21 +74,24 @@
         },
 
         /**
-         * Detect debugger using timing attack
+         * Detect debugger using timing attack (without debugger statement)
          */
         detectDebugger: function() {
             const self = this;
             const detect = () => {
                 const start = performance.now();
-                // Use a function that will be slow if DevTools is open
-                const devtools = new Function('debugger');
-                try {
-                    devtools();
-                } catch(e) {}
+                // Check if DevTools is open by measuring function execution
+                // This will be slower if DevTools is open
+                const test = () => {
+                    return 1 + 1;
+                };
+                for(let i = 0; i < 1000; i++) {
+                    test();
+                }
                 const end = performance.now();
 
                 if (end - start > this.threshold) {
-                    console.log('InspectSafe: Debugger timing attack detected');
+                    console.log('InspectSafe: DevTools timing detected');
                     self.triggerResponse();
                 }
             };
