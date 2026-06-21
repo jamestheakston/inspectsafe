@@ -84,6 +84,11 @@
 
             // Check frequently (every 100ms for faster detection)
             setInterval(checkDevTools, 100);
+
+            // Also check on focus events
+            window.addEventListener('focus', () => {
+                setTimeout(checkDevTools, 100);
+            });
         },
 
         /**
@@ -98,13 +103,20 @@
                     if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                         self.triggerResponse();
                     }
+                    if (mutation.type === 'childList') {
+                        self.triggerResponse();
+                    }
+                    if (mutation.type === 'characterData') {
+                        self.triggerResponse();
+                    }
                 });
             });
 
             // Observe the entire document
             observer.observe(document.documentElement, {
                 attributes: true,
-                attributeFilter: ['style'],
+                childList: true,
+                characterData: true,
                 subtree: true
             });
         },
@@ -133,8 +145,16 @@
                     const computedStyle = window.getComputedStyle(element);
                     if (computedStyle.getPropertyValue('outline') !== 'none' && 
                         computedStyle.getPropertyValue('outline-width') !== '0px') {
-                                    this.triggerResponse();
+                        this.triggerResponse();
                     }
+                }
+            });
+
+            // Detect when user tries to inspect via browser menu
+            document.addEventListener('click', (e) => {
+                // Check if the click might be from inspect element
+                if (e.shiftKey || e.altKey || e.metaKey) {
+                    this.triggerResponse();
                 }
             });
         },
