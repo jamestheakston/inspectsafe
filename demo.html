@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InspectSafe Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        .status {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            margin: 20px 0;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .info {
+            color: #666;
+            line-height: 1.8;
+            margin: 20px 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning h3 {
+            margin-bottom: 10px;
+            color: #dc3545;
+        }
+
+        .features {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .features li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 InspectSafe Demo</h1>
+        
+        <div class="status">✓ Protection Active</div>
+        
+        <div class="info">
+            <p>This page is protected by InspectSafe. Try to open DevTools or inspect elements to see the protection in action.</p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Warning</h3>
+            <p>Attempting to inspect this page will trigger an error and refresh the page automatically.</p>
+        </div>
+
+        <div class="features">
+            <h3>Protection Features:</h3>
+            <ul>
+                <li>DevTools detection via timing attacks</li>
+                <li>Window resize monitoring</li>
+                <li>Console opening detection</li>
+                <li>Right-click context menu blocking</li>
+                <li>Keyboard shortcut detection (F12, Ctrl+Shift+I, etc.)</li>
+                <li>Element inspection monitoring</li>
+                <li>Automatic page refresh on detection</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>InspectSafe v1.0 - Anti-Debugging Library</p>
+        </div>
+    </div>
+
+    <!-- Include InspectSafe Library -->
+    <script src="inspectsafe.js"></script>
+</body>
+</html>
