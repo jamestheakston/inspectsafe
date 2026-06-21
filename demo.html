@@ -103,29 +103,28 @@
         <div class="status">✓ Protection Active</div>
         
         <div class="info">
-            <p>This page is protected by InspectSafe. Try to open DevTools or inspect elements to see the protection in action.</p>
+            <p>This page is protected by InspectSafe. It prevents elements from being edited by monitoring DOM changes.</p>
         </div>
 
         <div class="warning">
             <h3>⚠️ Warning</h3>
-            <p>Attempting to inspect this page will trigger an error and refresh the page automatically.</p>
+            <p>Attempting to edit any element on this page will cause the page to refresh automatically, reverting all changes.</p>
         </div>
 
         <div class="features">
             <h3>Protection Features:</h3>
             <ul>
-                <li>DevTools detection via timing attacks</li>
-                <li>Window resize monitoring</li>
-                <li>Console opening detection</li>
-                <li>Right-click context menu blocking</li>
-                <li>Keyboard shortcut detection (F12, Ctrl+Shift+I, etc.)</li>
-                <li>Element inspection monitoring</li>
-                <li>Automatic page refresh on detection</li>
+                <li>DOM change detection via MutationObserver</li>
+                <li>Detects style attribute modifications</li>
+                <li>Detects text content changes</li>
+                <li>Detects element additions/removals</li>
+                <li>Automatic page refresh on any modification</li>
+                <li>Allows normal browsing and right-click</li>
             </ul>
         </div>
 
         <div class="footer">
-            <p>InspectSafe v1.0 - Anti-Debugging Library</p>
+            <p>InspectSafe v1.0 - Element Editing Protection</p>
         </div>
     </div>
 
