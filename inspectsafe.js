@@ -66,13 +66,18 @@
          * Detect debugger using timing attack
          */
         detectDebugger: function() {
+            const self = this;
             const detect = () => {
                 const start = performance.now();
-                debugger; // This line will pause if DevTools is open
+                // Use a function that will be slow if DevTools is open
+                const devtools = new Function('debugger');
+                try {
+                    devtools();
+                } catch(e) {}
                 const end = performance.now();
 
                 if (end - start > this.threshold) {
-                    this.triggerResponse();
+                    self.triggerResponse();
                 }
             };
 
@@ -84,6 +89,7 @@
          * Detect console opening by monitoring console behavior
          */
         detectConsole: function() {
+            const self = this;
             const originalConsole = Object.assign({}, console);
             let consoleOpen = false;
 
@@ -102,7 +108,7 @@
                 const end = performance.now();
 
                 if (end - start > this.threshold) {
-                    this.triggerResponse();
+                    self.triggerResponse();
                 }
             };
 
@@ -152,17 +158,18 @@
          * Periodic check for various DevTools indicators
          */
         startPeriodicCheck: function() {
+            const self = this;
             const check = () => {
                 // Check if firebug is enabled
                 if (window.firebug || window.console.firebug) {
-                    this.triggerResponse();
+                    self.triggerResponse();
                 }
 
                 // Check for DevTools by evaluating function
                 const devtools = /./;
                 devtools.toString = function() {
-                    this.triggerResponse();
-                }.bind(this);
+                    self.triggerResponse();
+                };
 
                 console.log('%c', devtools);
             };
@@ -174,15 +181,15 @@
          * Trigger the response: throw error and refresh page
          */
         triggerResponse: function() {
-            // Throw error
+            // Refresh page immediately
+            window.location.reload(true);
+            
+            // Throw error (this may not execute due to refresh)
             const error = new Error('InspectSafe: DevTools detected! Page will refresh.');
             error.name = 'InspectSafeError';
-            throw error;
-
-            // Refresh page (this will execute if error is caught)
             setTimeout(() => {
-                window.location.reload(true);
-            }, 100);
+                throw error;
+            }, 50);
         },
 
         /**
