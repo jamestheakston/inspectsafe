@@ -125,13 +125,6 @@
          * Detect element inspection using various methods
          */
         detectElementInspection: function() {
-            // Detect right-click context menu
-            document.addEventListener('contextmenu', (e) => {
-                console.log('InspectSafe: Right-click detected');
-                e.preventDefault();
-                this.triggerResponse();
-            });
-
             // Detect F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
             document.addEventListener('keydown', (e) => {
                 if (
