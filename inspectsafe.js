@@ -6,6 +6,8 @@
 (function(window) {
     'use strict';
 
+    console.log('InspectSafe: Loading...');
+
     const InspectSafe = {
         enabled: true,
         threshold: 100, // Time threshold for debugger detection (ms)
@@ -17,17 +19,25 @@
          * Initialize the library
          */
         init: function() {
-            if (!this.enabled) return;
+            console.log('InspectSafe: Initializing...');
+            if (!this.enabled) {
+                console.log('InspectSafe: Disabled, skipping initialization');
+                return;
+            }
 
             // Store the original page code
             this.storeOriginalCode();
+            console.log('InspectSafe: Original code stored');
 
             // Start all detection methods
-            this.detectWindowSize();
-            this.detectDebugger();
-            this.detectConsole();
             this.detectElementInspection();
-            this.startPeriodicCheck();
+            console.log('InspectSafe: Element inspection detection started');
+
+            this.detectWindowSize();
+            console.log('InspectSafe: Window size detection started');
+
+            this.detectDebugger();
+            console.log('InspectSafe: Debugger detection started');
 
             console.log('%cInspectSafe Active', 'color: #ff0000; font-size: 20px; font-weight: bold;');
         },
@@ -57,6 +67,7 @@
                 // If outer dimensions change but inner don't, likely DevTools
                 if ((widthDiff > 160 || heightDiff > 160) && 
                     (innerWidthDiff < 10 && innerHeightDiff < 10)) {
+                    console.log('InspectSafe: Window size change detected');
                     this.triggerResponse();
                 }
             });
@@ -77,6 +88,7 @@
                 const end = performance.now();
 
                 if (end - start > this.threshold) {
+                    console.log('InspectSafe: Debugger timing attack detected');
                     self.triggerResponse();
                 }
             };
@@ -86,41 +98,12 @@
         },
 
         /**
-         * Detect console opening by monitoring console behavior
-         */
-        detectConsole: function() {
-            const self = this;
-            const originalConsole = Object.assign({}, console);
-            let consoleOpen = false;
-
-            // Detect console by checking if it's being used
-            Object.defineProperty(console, 'clear', {
-                get: () => {
-                    consoleOpen = true;
-                    return originalConsole.clear;
-                }
-            });
-
-            // Check if DevTools is open by measuring function execution time
-            const checkConsole = () => {
-                const start = performance.now();
-                console.log('%c', 'color: transparent;');
-                const end = performance.now();
-
-                if (end - start > this.threshold) {
-                    self.triggerResponse();
-                }
-            };
-
-            setInterval(checkConsole, this.checkInterval);
-        },
-
-        /**
          * Detect element inspection using various methods
          */
         detectElementInspection: function() {
             // Detect right-click context menu
             document.addEventListener('contextmenu', (e) => {
+                console.log('InspectSafe: Right-click detected');
                 e.preventDefault();
                 this.triggerResponse();
             });
@@ -132,55 +115,18 @@
                     (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
                     (e.ctrlKey && e.key === 'U')
                 ) {
+                    console.log('InspectSafe: DevTools shortcut detected: ' + e.key);
                     e.preventDefault();
                     this.triggerResponse();
                 }
             });
-
-            // Detect element inspection using elementFromPoint
-            let lastElement = null;
-            document.addEventListener('mousemove', (e) => {
-                const element = document.elementFromPoint(e.clientX, e.clientY);
-                if (element && element !== lastElement) {
-                    lastElement = element;
-                    
-                    // Check if element is being inspected
-                    const computedStyle = window.getComputedStyle(element);
-                    if (computedStyle.getPropertyValue('outline') !== 'none' && 
-                        computedStyle.getPropertyValue('outline-width') !== '0px') {
-                        this.triggerResponse();
-                    }
-                }
-            });
-        },
-
-        /**
-         * Periodic check for various DevTools indicators
-         */
-        startPeriodicCheck: function() {
-            const self = this;
-            const check = () => {
-                // Check if firebug is enabled
-                if (window.firebug || window.console.firebug) {
-                    self.triggerResponse();
-                }
-
-                // Check for DevTools by evaluating function
-                const devtools = /./;
-                devtools.toString = function() {
-                    self.triggerResponse();
-                };
-
-                console.log('%c', devtools);
-            };
-
-            setInterval(check, this.checkInterval);
         },
 
         /**
          * Trigger the response: throw error and refresh page
          */
         triggerResponse: function() {
+            console.log('InspectSafe: TRIGGERING RESPONSE - Refreshing page');
             // Refresh page immediately
             window.location.reload(true);
             
@@ -196,6 +142,7 @@
          * Disable the library (for testing purposes)
          */
         disable: function() {
+            console.log('InspectSafe: Disabling...');
             this.enabled = false;
             if (this.timer) {
                 clearInterval(this.timer);
@@ -206,10 +153,16 @@
     // Expose to global scope
     window.InspectSafe = InspectSafe;
 
+    console.log('InspectSafe: Library loaded, waiting for DOM...');
+
     // Auto-initialize
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => InspectSafe.init());
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('InspectSafe: DOM loaded, initializing...');
+            InspectSafe.init();
+        });
     } else {
+        console.log('InspectSafe: DOM already loaded, initializing...');
         InspectSafe.init();
     }
 
