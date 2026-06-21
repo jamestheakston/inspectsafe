@@ -160,7 +160,9 @@
             console.log('InspectSafe: TRIGGERING RESPONSE - Reverting to original code');
             // Restore original HTML instead of refreshing
             if (this.originalCode) {
-                document.documentElement.outerHTML = this.originalCode;
+                document.open();
+                document.write(this.originalCode);
+                document.close();
             }
             
             // Throw error
